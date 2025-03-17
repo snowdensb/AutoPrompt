@@ -1,10 +1,10 @@
 import yaml
 from easydict import EasyDict as edict
 from langchain.prompts import PromptTemplate
-from langchain_community.chat_models import ChatOpenAI
+from langchain_openai import ChatOpenAI
 from pathlib import Path
 from langchain.llms.huggingface_pipeline import HuggingFacePipeline
-from langchain_community.chat_models import AzureChatOpenAI
+from langchain_openai.chat_models import AzureChatOpenAI
 from langchain.chains import LLMChain
 import logging
 
@@ -35,15 +35,16 @@ def get_llm(config: dict):
         model_kwargs = {}
 
     if config['type'].lower() == 'openai':
+        api_base = LLM_ENV['openai']['OPENAI_API_BASE'] if LLM_ENV['openai']['OPENAI_API_BASE'] != '' else 'https://api.openai.com/v1'
         if LLM_ENV['openai']['OPENAI_ORGANIZATION'] == '':
             return ChatOpenAI(temperature=temperature, model_name=config['name'],
                               openai_api_key=config.get('openai_api_key', LLM_ENV['openai']['OPENAI_API_KEY']),
-                              openai_api_base=config.get('openai_api_base', 'https://api.openai.com/v1'),
+                              openai_api_base=config.get('openai_api_base', api_base),
                               model_kwargs=model_kwargs)
         else:
             return ChatOpenAI(temperature=temperature, model_name=config['name'],
                               openai_api_key=config.get('openai_api_key', LLM_ENV['openai']['OPENAI_API_KEY']),
-                              openai_api_base=config.get('openai_api_base', 'https://api.openai.com/v1'),
+                              openai_api_base=config.get('openai_api_base', api_base),
                               openai_organization=config.get('openai_organization', LLM_ENV['openai']['OPENAI_ORGANIZATION']),
                               model_kwargs=model_kwargs)
     elif config['type'].lower() == 'azure':
@@ -56,6 +57,12 @@ def get_llm(config: dict):
         from langchain_google_genai import ChatGoogleGenerativeAI
         return ChatGoogleGenerativeAI(temperature=temperature, model=config['name'],
                               google_api_key=LLM_ENV['google']['GOOGLE_API_KEY'],
+                              model_kwargs=model_kwargs)
+    
+    elif config['type'].lower() == 'anthropic':
+        from langchain_anthropic import ChatAnthropic
+        return ChatAnthropic(temperature=temperature, model=config['name'],
+                              api_key=LLM_ENV['anthropic']['ANTHROPIC_API_KEY'],
                               model_kwargs=model_kwargs)
 
 
