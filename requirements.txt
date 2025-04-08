@@ -1,7 +1,7 @@
 argilla==1.25.0
 schedule==1.2.1
 pandas==1.5.3
-tqdm==4.66.1
+tqdm==4.67.1
 prodict==0.8.18
 langchain==0.3.7
 openai==1.54.4
